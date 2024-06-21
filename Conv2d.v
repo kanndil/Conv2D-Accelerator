@@ -9,34 +9,37 @@
 `timescale 1ns/1ps
 `default_nettype none
 
-module conv #( parameter    DSIZE = 256,
-                            KSIZE = 3)
+module conv #( parameter    DSIZE = 256,   
+                            KSIZE = 3)  // this is the maximum kernel size
 (
-    input                       clk,
-    input                       rst_n,
+    input                       clk,        // System clock
+    input                       rst_n,      // Asynchronous reset active low
 
     // Input data information
-    input   [7:0]               di_w,
-    input   [7:0]               di_h,
-    input   [7:0]               di_x_stop,
-    input   [7:0]               di_y_stop,
+    input   [7:0]               data_width,       // Input data width
+    input   [7:0]               data_hight,       // Input data height
+    input   [7:0]               di_x_stop,  // This is the image width - kernel width (to save HW) 
+    input   [7:0]               di_y_stop,  // This is the image height - kernel height (to save HW)
 
     // Stride information
-    input   [3:0]               stride_x,
-    input   [3:0]               stride_y,
+    input   [3:0]               stride_x,   // Stride length in x direction 
+    input   [3:0]               stride_y,   // Stride length in y direction
     
     // The kernel information
-    input   [8*KSIZE*KSIZE-1:0] k,
-    input   [3:0]               k_w,
-    input   [3:0]               k_h,
+    input   [8*KSIZE*KSIZE-1:0] kernel,          // Convolution Kernel 
+                                                 // KSIZE^2 x 8 bits
+    input   [3:0]               kernel_width,        
+    input   [3:0]               kernel_hight,        
     
     // Input Data Memory Ports
-    input   [$clog2(DSIZE)-3:0] mi_addr,
-    input   [31:0]              mi_data,
+    input   [$clog2(DSIZE)-3:0] mi_addr,    // $clog2(DSIZE): the ceiling of the base-2 logarithm of DSIZE, 
+                                            // gives the number of bits needed to address DSIZE unique locations.
+                                            // -3: 2^3 = 8  (byte addressable)
+    input   [31:0]              mi_data,    // Input data 32 bit word
     input                       mi_wr,
 
     // Output Data Memory Ports
-    input   [$clog2(DSIZE)-3:0] mo_addr,
+    input   [$clog2(DSIZE)-3:0] mo_addr,    
     output  [31:0]              mo_data,
 
     // Control and status
@@ -44,22 +47,23 @@ module conv #( parameter    DSIZE = 256,
     output                      done
 );
 
-    localparam [1:0]    IDLE = 2'b00,
-                        CALC = 2'b01;
+    localparam [1:0]    IDLE = 2'b00,   CALC = 2'b01;
 
-    reg [7:0]   DI[DSIZE-1:0];
-    reg [7:0]   DO[DSIZE-1:0];
+    reg [7:0]   DI  [DSIZE-1:0];
+    reg [7:0]   DO  [DSIZE-1:0];
 
-    wire [7:0]  di_addr, do_addr, k_addr;
+    wire [7:0]  di_addr, k_addr;
     
-    wire [7:0] kernel [KSIZE][KSIZE];
-    
-    genvar ri, ci;
-    generate
-        for(ri=0; ri<KSIZE; ri=ri+1)
-            for(ci=0; ci<KSIZE; ci=ci+1)    
-                assign kernel[ri][ci] = k[(ri*KSIZE+ci)*8+7:(ri*KSIZE+ci)*8];
-    endgenerate
+/* 
+        +----+           +----+
+        |    v           |    v
+        +------+  start  +------+
+        | IDLE |-------->| CALC |
+        +------+         +------+
+          ^                 |
+          |       done      |
+          +-----------------+
+*/
 
     // The Control FSM
     reg [1:0] state, nstate;
@@ -87,7 +91,7 @@ module conv #( parameter    DSIZE = 256,
         endcase
     end
     
-    // DI Write
+    // DI Write 
     always @(posedge clk)
         if(mi_wr)
             {DI[mi_addr+3], DI[mi_addr+2], DI[mi_addr+1], DI[mi_addr]} <= mi_data;
@@ -99,43 +103,39 @@ module conv #( parameter    DSIZE = 256,
     reg[7:0]    di_x_cntr, di_y_cntr;
     reg[3:0]    k_x_cntr, k_y_cntr;
 
-    wire    kernel_row_done = (k_x_cntr == (k_w - 1));
-    wire    kernel_last_col = (k_y_cntr == (k_h - 1));
+    wire    kernel_row_done = (k_x_cntr == (kernel_width - 1));
+    wire    kernel_last_col = (k_y_cntr == (kernel_hight - 1));
     wire    kernel_done     = (kernel_row_done && kernel_last_col);
     wire    di_row_done     = (di_x_cntr == di_x_stop) && kernel_done;
     wire    di_last_col     = (di_y_cntr == di_y_stop);
     wire    di_done         = (di_last_col) && di_row_done; 
     
     `CNTR(k_x_cntr, 0)
-        if(kernel_row_done)
-            k_x_cntr <= 0;
-        else
-            k_x_cntr <= k_x_cntr + 'b1;              
+        if  (kernel_row_done)   k_x_cntr <= 0;
+        else                    k_x_cntr <= k_x_cntr + 'b1;              
     
     `CNTR(k_y_cntr, 0)
-        if(kernel_done)
-            k_y_cntr <= 'b0;    
-        else if(kernel_row_done)
-            k_y_cntr <= k_y_cntr + 'b1;
+        if  (kernel_done)           k_y_cntr <= 'b0;    
+        else if (kernel_row_done)   k_y_cntr <= k_y_cntr + 'b1;
+        else                        k_y_cntr <= k_y_cntr;
     
     `CNTR(di_x_cntr, 0)
-        if(di_row_done)
-            di_x_cntr <= 0;
-        else if(kernel_done)
-            di_x_cntr <= di_x_cntr + stride_x;
+        if  (di_row_done)       di_x_cntr <= 0;
+        else if (kernel_done)   di_x_cntr <= di_x_cntr + stride_x;
+        else                    di_x_cntr <= di_x_cntr;
 
     `CNTR(di_y_cntr, 0)
-        if(di_done)
-            di_y_cntr <= 0;
-        else if(di_row_done)
-            di_y_cntr <= di_y_cntr + stride_y;
+        if  (di_done)           di_y_cntr <= 0;
+        else if(di_row_done)    di_y_cntr <= di_y_cntr + stride_y;
+        else                    di_y_cntr <= di_y_cntr;
 
-    assign di_addr  =   di_x_cntr + di_y_cntr * di_w;
-    assign k_addr   =   k_x_cntr + k_w * k_y_cntr; 
+
+    assign di_addr  =   di_x_cntr   +   data_width      *   di_y_cntr;
+    assign k_addr   =   k_x_cntr    +   kernel_width    *   k_y_cntr; 
     
     // The MAC with saturation
-    wire[15:0] mul;
-    assign mul = DI[di_addr] * kernel[k_y_cntr][k_x_cntr];
+    wire  [15:0]  mul;
+    assign        mul = DI[di_addr] *   kernel[k_addr];
     
     reg[15:0] acc;
     always @(posedge clk, negedge rst_n) 
@@ -146,14 +146,18 @@ module conv #( parameter    DSIZE = 256,
         else
             acc <= acc + mul;
 
+
+// underflow and overflow
     // check whether we are >127 or <-128
-    wire u = acc[15] & (~&acc[15:7]);
+    wire u =  acc[15] & (~&acc[15:7]);
     wire o = ~acc[15] & (|acc[15:7]);
         
     // Change later
     always @(posedge clk)
         if(kernel_done)
             DO[di_addr] <= u ? 8'h80 : o ? 8'd127 : acc;
+        else 
+            DO[di_addr] <= DO[di_addr];
 
     assign done = di_done;
 
