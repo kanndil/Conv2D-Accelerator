@@ -5,7 +5,6 @@
                                 r <= i;\ 
                             else if(state == CALC)
 
-
 `timescale 1ns/1ps
 `default_nettype none
 
@@ -110,24 +109,24 @@ module conv #( parameter    DSIZE = 256,
     wire    di_last_col     = (di_y_cntr == di_y_stop);
     wire    di_done         = (di_last_col) && di_row_done; 
     
-    `CNTR(k_x_cntr, 0)
-        if  (kernel_row_done)   k_x_cntr <= 0;
-        else                    k_x_cntr <= k_x_cntr + 'b1;              
+    `CNTR(k_x_cntr, 0) // from k_x_cntr = 0 to  kernel_width - 1
+        if  (kernel_row_done)       k_x_cntr <= 0;
+        else                        k_x_cntr <= k_x_cntr + 'b1;              
     
-    `CNTR(k_y_cntr, 0)
+    `CNTR(k_y_cntr, 0)  
         if  (kernel_done)           k_y_cntr <= 'b0;    
         else if (kernel_row_done)   k_y_cntr <= k_y_cntr + 'b1;
         else                        k_y_cntr <= k_y_cntr;
     
     `CNTR(di_x_cntr, 0)
-        if  (di_row_done)       di_x_cntr <= 0;
-        else if (kernel_done)   di_x_cntr <= di_x_cntr + stride_x;
-        else                    di_x_cntr <= di_x_cntr;
+        if  (di_row_done)           di_x_cntr <= 0;
+        else if (kernel_done)       di_x_cntr <= di_x_cntr + stride_x;
+        else                        di_x_cntr <= di_x_cntr;
 
     `CNTR(di_y_cntr, 0)
-        if  (di_done)           di_y_cntr <= 0;
-        else if(di_row_done)    di_y_cntr <= di_y_cntr + stride_y;
-        else                    di_y_cntr <= di_y_cntr;
+        if  (di_done)               di_y_cntr <= 0;
+        else if(di_row_done)        di_y_cntr <= di_y_cntr + stride_y;
+        else                        di_y_cntr <= di_y_cntr;
 
 
     assign di_addr  =   di_x_cntr   +   data_width      *   di_y_cntr;
