@@ -30,28 +30,25 @@ module conv_tb;
     wire [31:0] mem_output_data;
 
     conv #(.DSIZE(DSIZE),  .KSIZE(KSIZE)) DUV (
-        //Clock and reset
-        .clk(clk),  .rst_n(rst_n),
-
-        // Input data information
-        .data_width(DATA_WIDTH),    .data_height(DATA_HEIGHT),   .di_x_stop(DATA_WIDTH-KSIZE),   .di_y_stop(DATA_HEIGHT-KSIZE),
-
-        // Stride information
-        .stride_x(4'd1),    .stride_y(4'd1),
-        
-        // The kernel information
-        .kernel(kernel),    .kernel_width(KSIZE),   .kernel_height(KSIZE),
-        
-        // Input Data Memory Ports
-        .mi_addr(mem_input_addr), .mi_data(mem_input_data), .mi_wr(mem_input_wr),
-
-        // Output Data Memory Ports
-        .mo_addr(mem_output_addr), .mo_data(mem_output_data),
-
-        // Control and status
-        .start(start),  .done(done)
+        .clk(clk),  
+        .rst_n(rst_n),
+        .data_width(DATA_WIDTH),    
+        .data_height(DATA_HEIGHT),   
+        .di_x_stop(DATA_WIDTH-KSIZE),   
+        .di_y_stop(DATA_HEIGHT-KSIZE),
+        .stride_x(4'd1),    
+        .stride_y(4'd1),
+        .kernel(kernel),    
+        .kernel_width(KSIZE),   
+        .kernel_height(KSIZE),
+        .mi_addr(mem_input_addr), 
+        .mi_data(mem_input_data), 
+        .mi_wr(mem_input_wr),
+        .mo_addr(mem_output_addr), 
+        .mo_data(mem_output_data),
+        .start(start),  
+        .done(done)
     );
-
 
     // Initial block to assign values to kernel and image
     initial begin
@@ -59,8 +56,6 @@ module conv_tb;
         for (i = 0; i < 256; i +=1) 
             image[i] = i;    
     end
-
-
 
     initial begin
         $display("start test");
@@ -88,17 +83,14 @@ module conv_tb;
         mem_input_wr = 0;
         $display("Data writen"); // Display the binary value  
 
-        start = 1;
-        #10;
-        start = 0;
-
+        start = 1;      #10;    start = 0;
 
         // Wait for the operation to complete
         wait (done);
 
         `PRINT_MEM_OUTPUT(DATA_HEIGHT, DATA_WIDTH, mem_output_addr, mem_output_data)
-    
-        // Finish the simulation
+
+        $display("Test Done");
         #100;
         $finish;
     end
