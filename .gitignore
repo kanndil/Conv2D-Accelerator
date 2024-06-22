@@ -165,3 +165,11 @@ cython_debug/
 
 *.rapidgpt
 settings.json
+tasks.json
+out
+.vscode/c_cpp_properties.json
+conv_tb.vcd
+Conv.dSYM/Contents/Resources/DWARF/Conv
+Conv.dSYM/Contents/Resources/Relocations/x86_64/Conv.yml
+Conv.dSYM/Contents/Info.plist
+Conv
