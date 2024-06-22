@@ -17,3 +17,17 @@
                                                 @(e_``name``_start);
 `define     TB_TEST_END(name)                   -> e_``name``_done; \
                                                 end 
+
+
+
+
+`define PRINT_MEM_OUTPUT(DATA_HEIGHT, DATA_WIDTH, mem_output_addr, mem_output_data) \
+    begin \
+        for (i = 0; i < DATA_HEIGHT; i += 1) begin \
+            for (j = 0; j < DATA_WIDTH; j += 1) begin \
+                mem_output_addr = i * DATA_WIDTH + j; \
+                $write(" %d", mem_output_data[7:0]); \
+            end \
+            $write("\n"); \
+        end \
+    end
