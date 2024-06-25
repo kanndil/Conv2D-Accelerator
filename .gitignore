@@ -173,3 +173,5 @@ Conv.dSYM/Contents/Resources/DWARF/Conv
 Conv.dSYM/Contents/Resources/Relocations/x86_64/Conv.yml
 Conv.dSYM/Contents/Info.plist
 Conv
+golden_model_output.txt
+conv2d_old.v
