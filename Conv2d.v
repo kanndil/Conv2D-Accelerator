@@ -8,7 +8,7 @@
                             r <= i; \
                         else if(state == CALC)
 
-module conv #(parameter DSIZE = 256, KSIZE = 3) // This is the maximum kernel size
+module conv #(parameter DSIZE = 1024, KSIZE = 5) // This is the maximum kernel size
 (
     input                       clk,        // System clock
     input                       rst_n,      // Asynchronous reset active low
@@ -16,8 +16,8 @@ module conv #(parameter DSIZE = 256, KSIZE = 3) // This is the maximum kernel si
     // Input data information
     input   [7:0]               data_width,     // Input data width
     input   [7:0]               data_height,    // Input data height
-    input   [7:0]               di_x_stop,      // This is the image width - kernel width (to save HW)
-    input   [7:0]               di_y_stop,      // This is the image height - kernel height (to save HW)
+    input   [7:0]               result_width,      // result_width  = (data_width -  kernel_width)  / stride_x; (to save HW)
+    input   [7:0]               result_height,     // result_height = (data_height - kernel_height) / stride_y; (to save HW)
 
     // Stride information
     input   [3:0]               stride_x,       // Stride length in x direction 
@@ -106,8 +106,8 @@ module conv #(parameter DSIZE = 256, KSIZE = 3) // This is the maximum kernel si
     wire kernel_row_done = (k_x_cntr == (kernel_width - 1));
     wire kernel_last_col = (k_y_cntr == (kernel_height - 1));
     wire kernel_done     = (kernel_row_done && kernel_last_col);
-    wire di_row_done     = (di_x_cntr == di_x_stop) && kernel_done;
-    wire di_last_col     = (di_y_cntr == di_y_stop);
+    wire di_row_done     = (di_x_cntr >= result_width) && kernel_done;
+    wire di_last_col     = (di_y_cntr >= result_height) && di_row_done ;
     wire di_done         = (di_last_col && di_row_done);
 
     `CNTR(k_x_cntr, 0)
@@ -120,26 +120,25 @@ module conv #(parameter DSIZE = 256, KSIZE = 3) // This is the maximum kernel si
 
     `CNTR(di_x_cntr, 0)
         if (di_row_done)           di_x_cntr <= 0;
-        else if (kernel_done)      di_x_cntr <= di_x_cntr + stride_x;
+        else if (kernel_done)      di_x_cntr <= di_x_cntr + 1;
 
     `CNTR(di_y_cntr, 0)
-        if (di_done)               di_y_cntr <= 0;
-        else if(di_row_done)       di_y_cntr <= di_y_cntr + stride_y;
+        if (di_last_col)           di_y_cntr <= 0;
+        else if(di_row_done)       di_y_cntr <= di_y_cntr + 1;
 
-    wire [7:0] image_x = di_x_cntr + k_x_cntr;
-    wire [7:0] image_y = di_y_cntr + k_y_cntr;
+    wire [7:0] image_x = di_x_cntr * stride_x + k_x_cntr;
+    wire [7:0] image_y = di_y_cntr * stride_y + k_y_cntr;
 
     assign di_addr  = image_x + data_width * image_y;
     assign k_addr   = k_x_cntr + kernel_width * k_y_cntr;
     wire [7:0] do_addr = di_x_cntr + data_width * di_y_cntr;
 
-    wire [7:0] temp_data = DI[di_addr];
-    wire [7:0] temp_kernel = kernel[k_addr*8];
 
     wire [15:0] mul; 
-    assign mul = temp_data * temp_kernel;
+    assign mul = DI[di_addr] * kernel[k_addr*8];
 
     reg[15:0] acc = 0;
+    reg [31:0] calc_counter =0;
 
     always @(posedge clk or negedge rst_n) 
     begin
@@ -147,8 +146,11 @@ module conv #(parameter DSIZE = 256, KSIZE = 3) // This is the maximum kernel si
             acc = 0;
         else if(state == CALC) begin
             acc = acc + mul;
+            //calc_counter = calc_counter+1;
+            //$display(calc_counter);
             if(kernel_done) begin 
                 DO[do_addr] = (acc[15] & (~&acc[15:7])) ? 8'h80 : (~acc[15] & (|acc[15:7])) ? 8'd127 : acc[7:0];
+                //$display(DO[do_addr], do_addr, calc_counter);
                 acc = 0;
             end
         end
