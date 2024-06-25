@@ -134,27 +134,43 @@ module conv #(parameter DSIZE = 1024, KSIZE = 5) // This is the maximum kernel s
     wire [7:0] do_addr = di_x_cntr + data_width * di_y_cntr;
 
 
-    wire [15:0] mul; 
+    reg kernel_done_delayed=0; 
+    reg [7:0] do_addr_delayed=0;
+    always @(posedge clk, negedge rst_n) 
+        if(!rst_n) begin
+                kernel_done_delayed <= 0;
+                do_addr_delayed <= 0;
+        end
+        else begin
+            kernel_done_delayed <= kernel_done;
+            do_addr_delayed     <= do_addr;
+        end
+
+
+    wire [15:0] mul;  reg[15:0] acc = 0;
+
+    
     assign mul = DI[di_addr] * kernel[k_addr*8];
 
-    reg[15:0] acc = 0;
-    reg [31:0] calc_counter =0;
-
-    always @(posedge clk or negedge rst_n) 
-    begin
-        if(!rst_n) 
-            acc = 0;
+    always @(posedge clk, negedge rst_n) 
+         if(!rst_n) 
+             acc <= 0;
         else if(state == CALC) begin
-            acc = acc + mul;
-            //calc_counter = calc_counter+1;
-            //$display(calc_counter);
-            if(kernel_done) begin 
-                DO[do_addr] = (acc[15] & (~&acc[15:7])) ? 8'h80 : (~acc[15] & (|acc[15:7])) ? 8'd127 : acc[7:0];
-                //$display(DO[do_addr], do_addr, calc_counter);
-                acc = 0;
-            end
+            if(kernel_done_delayed)
+                acc <= mul;
+            else
+                acc <= acc + mul;
         end
-    end
+
+    // check whether we are >127 or <-128
+     wire u = acc[15] & (~&acc[15:7]);
+     wire o = ~acc[15] & (|acc[15:7]);
+
+     // Change later
+     always @(posedge clk)
+         if(kernel_done_delayed)
+            DO[do_addr_delayed] <= u ? 8'h80 : o ? 8'd127 : acc;
+
 
     assign done = di_done;
 
