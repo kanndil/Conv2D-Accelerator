@@ -11,7 +11,7 @@ int main() {
     int kernel[9] = {1, 0, 1, 1, 0, 1, 1, 0, 1};
 
     int stride_x = 1;
-    int stride_y = 2;
+    int stride_y = 1;
 
     int result_width = (image_width - kernel_width) / stride_x + 1;
     int result_height = (image_height - kernel_height) / stride_y + 1;
@@ -31,9 +31,26 @@ int main() {
                     sum += image[image_i * image_width + image_j] * kernel[k_i * kernel_width + k_j];
                 }
             }
+            // Saturate the sum to be within -128 to 127
+            if (sum > 127) {
+                sum = 127;
+            } else if (sum < -128) {
+                sum = -128;
+            }
             result[i * result_width + j] = sum;
         }
     }
+
+    // print 2d using
+     for (int i =0; i< result_width; i++){
+         for (int j =0; j< result_height; j++){
+             printf("%d ", result[i * result_width + j]);
+         }
+         printf("\n");
+     }
+
+
+
 
     return 0;
 }
