@@ -11,7 +11,7 @@ int main() {
     int kernel[9] = {1, 0, 1, 1, 0, 1, 1, 0, 1};
 
     int stride_x = 1;
-    int stride_y = 2;
+    int stride_y = 1;
 
     int result_width = (image_width - kernel_width) / stride_x + 1;
     int result_height = (image_height - kernel_height) / stride_y + 1;

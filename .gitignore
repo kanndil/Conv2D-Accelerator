@@ -176,3 +176,4 @@ Conv
 golden_model_output.txt
 conv2d_old.v
 output.txt
+verilog_module_output.txt
