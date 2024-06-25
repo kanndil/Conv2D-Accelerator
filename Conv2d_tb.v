@@ -34,7 +34,6 @@ module conv_tb;
 
     reg [$clog2(DSIZE):0]mem_output_addr = 0;
     wire [31:0] mem_output_data;
-    
     wire done;
 
     conv #(.DSIZE(DSIZE),  .KSIZE(KSIZE)) DUV (

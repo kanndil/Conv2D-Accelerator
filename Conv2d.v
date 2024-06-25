@@ -136,20 +136,26 @@ module conv #(parameter DSIZE = 1024, KSIZE = 5) // This is the maximum kernel s
 
     reg kernel_done_delayed=0; 
     reg [7:0] do_addr_delayed=0;
+    reg di_done_delayed =0; 
+    reg di_done_delayed_2 =0;
     always @(posedge clk, negedge rst_n) 
         if(!rst_n) begin
                 kernel_done_delayed <= 0;
                 do_addr_delayed <= 0;
+                di_done_delayed <= 0;
+                di_done_delayed_2<=0;
         end
         else begin
             kernel_done_delayed <= kernel_done;
             do_addr_delayed     <= do_addr;
+            di_done_delayed     <= di_done;
+            di_done_delayed_2 <=di_done_delayed;
         end
 
 
     wire [15:0] mul;  reg[15:0] acc = 0;
 
-    
+
     assign mul = DI[di_addr] * kernel[k_addr*8];
 
     always @(posedge clk, negedge rst_n) 
@@ -170,8 +176,7 @@ module conv #(parameter DSIZE = 1024, KSIZE = 5) // This is the maximum kernel s
      always @(posedge clk)
          if(kernel_done_delayed)
             DO[do_addr_delayed] <= u ? 8'h80 : o ? 8'd127 : acc;
-
-
-    assign done = di_done;
+            
+    assign done = di_done_delayed_2;
 
 endmodule
