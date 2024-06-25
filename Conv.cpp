@@ -11,7 +11,7 @@ int main() {
     int kernel[9] = {1, 0, 1, 1, 0, 1, 1, 0, 1};
 
     int stride_x = 1;
-    int stride_y = 1;
+    int stride_y = 2;
 
     int result_width = (image_width - kernel_width) / stride_x + 1;
     int result_height = (image_height - kernel_height) / stride_y + 1;
@@ -20,6 +20,15 @@ int main() {
     for (int i = 0; i < image_width * image_height; i++) {
         image[i] = i;
     }
+
+    // print 2d using
+    for (int i =0; i< image_height; i++){
+        for (int j =0; j< image_width; j++){
+            printf("%d ", image[i * result_width + j]);
+        }
+        printf("\n");
+    }
+    printf("\n\n\n");
 
     for (int i = 0; i < result_height; i++) {
         for (int j = 0; j < result_width; j++) {
@@ -42,8 +51,8 @@ int main() {
     }
 
     // print 2d using
-     for (int i =0; i< result_width; i++){
-         for (int j =0; j< result_height; j++){
+     for (int i =0; i< result_height; i++){
+         for (int j =0; j< result_width; j++){
              printf("%d ", result[i * result_width + j]);
          }
          printf("\n");
