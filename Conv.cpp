@@ -49,6 +49,23 @@ int main() {
          printf("\n");
      }
 
+         // Write the result to a text file
+    FILE *file = fopen("golden_model_output.txt", "w");
+    if (file == NULL) {
+        printf("Error opening file!\n");
+        return 1;
+    }
+
+    for (int i = 0; i < result_height; i++) {
+        for (int j = 0; j < result_width; j++) {
+            fprintf(file, "%d ", result[i * result_width + j]);
+        }
+        fprintf(file, "\n");
+    }
+
+    fclose(file);
+
+
 
 
 
