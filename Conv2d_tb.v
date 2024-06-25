@@ -9,11 +9,13 @@ module conv_tb;
     parameter DATA_WIDTH    = 8'd8;
     parameter DATA_HEIGHT   = 8'd8;
     parameter STRIDE_X      = 4'd1;
-    parameter STRIDE_Y      = 4'd2;
+    parameter STRIDE_Y      = 4'd1;
     parameter KERNEL_WIDTH  = 4'd3;
     parameter KERNEL_HEIGHT = 4'd3;
+    parameter RESULT_WIDTH = (DATA_WIDTH -  KERNEL_WIDTH)  / STRIDE_X;
+    parameter RESULT_HEIGHT = (DATA_HEIGHT -  KERNEL_HEIGHT)  / STRIDE_Y;
 
-    integer i, j;
+    integer i, j,file_id;
     integer timer_start=0;
     integer timer_stop=0;
 
@@ -41,8 +43,8 @@ module conv_tb;
         .rst_n(rst_n),
         .data_width(DATA_WIDTH),    
         .data_height(DATA_HEIGHT),   
-        .result_width(  (DATA_WIDTH -  KERNEL_WIDTH)  / STRIDE_X),   
-        .result_height( (DATA_HEIGHT - KERNEL_HEIGHT) / STRIDE_Y),
+        .result_width(RESULT_WIDTH),   
+        .result_height(RESULT_HEIGHT),
         .stride_x(STRIDE_X),    
         .stride_y(STRIDE_Y),
         .kernel(kernel),    
@@ -112,7 +114,11 @@ module conv_tb;
         $display("compute time: %d", timer_stop - timer_start);
 
         timer_start = count;
-        `PRINT_MEM_OUTPUT(DATA_HEIGHT, DATA_WIDTH, mem_output_addr, mem_output_data)
+        
+        `PRINT_MEM_OUTPUT(RESULT_HEIGHT, RESULT_WIDTH, DATA_WIDTH, mem_output_addr, mem_output_data)
+        `WRITE_MEM_OUTPUT_TO_FILE(RESULT_HEIGHT, RESULT_WIDTH, DATA_WIDTH, mem_output_addr, mem_output_data, "verilog_module_output.txt")
+        
+
         timer_stop = count;
         $display("data output time: %d", timer_stop - timer_start);
         $display("Test Done");

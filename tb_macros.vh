@@ -21,13 +21,31 @@
 
 
 
-`define PRINT_MEM_OUTPUT(DATA_HEIGHT, DATA_WIDTH, mem_output_addr, mem_output_data) \
+`define PRINT_MEM_OUTPUT(result_height, result_width,  DATA_WIDTH, mem_output_addr, mem_output_data) \
     begin \
-        for (i = 0; i < DATA_HEIGHT; i += 1) begin \
-            for (j = 0; j < DATA_WIDTH; j += 1) begin \
+        for (i = 0; i <= result_height; i += 1) begin \
+            for (j = 0; j <= result_width; j += 1) begin \
                 mem_output_addr = i * DATA_WIDTH + j; \
                 $write(" %d", mem_output_data[7:0]); \
             end \
             $write("\n"); \
         end \
+    end
+
+
+`define WRITE_MEM_OUTPUT_TO_FILE(result_height, result_width, DATA_WIDTH, mem_output_addr, mem_output_data, filename) \
+    begin \
+        file_id = $fopen(filename, "w"); \
+        if (file_id == 0) begin \
+            $display("Error: Could not open file."); \
+            $finish; \
+        end \
+        for (i = 0; i <= result_height; i += 1) begin \
+            for (j = 0; j <= result_width; j += 1) begin \
+                mem_output_addr = i * DATA_WIDTH + j; \
+                $fwrite(file_id, " %d", mem_output_data[7:0]); \
+            end \
+            $fwrite(file_id, "\n"); \
+        end \
+        $fclose(file_id); \
     end
