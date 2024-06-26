@@ -12,11 +12,13 @@ using namespace std;
 #define result_width   (image_width - kernel_width) / stride_x + 1
 #define result_height  (image_height - kernel_height) / stride_y + 1
 
-int main() {
 
-    int image[image_width * image_height];
-    int kernel[9] = {1, 0, 1, 1, 0, 1, 1, 0, 1};
-    int result[result_width * result_height];
+int image[image_width * image_height];
+int kernel[9] = {1, 0, 1, 1, 0, 1, 1, 0, 1};
+int result[result_width * result_height];
+
+
+int main() {
 
     for (int i = 0; i < image_width * image_height; i++) {
         image[i] = i;
