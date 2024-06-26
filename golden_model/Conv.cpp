@@ -8,8 +8,8 @@
 
 using namespace std;
 #define DSIZE       1024
-#define image_width   8
-#define image_height  8
+#define image_width   62
+#define image_height  12
 
 #define kernel_width   3
 #define kernel_height  3

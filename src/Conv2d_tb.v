@@ -6,8 +6,8 @@ module conv_tb;
     // Parameters
     parameter DSIZE         = 1024;
     parameter KSIZE         = 4'd3;
-    parameter DATA_WIDTH    = 8'd8;
-    parameter DATA_HEIGHT   = 8'd8;
+    parameter DATA_WIDTH    = 8'd62;
+    parameter DATA_HEIGHT   = 8'd12;
     parameter STRIDE_X      = 4'd1;
     parameter STRIDE_Y      = 4'd1;
     parameter KERNEL_WIDTH  = 4'd3;
@@ -101,7 +101,7 @@ module conv_tb;
         mem_input_wr = 1;
 
         timer_start = count;
-        for (i = 0; i < 256; i +=4) begin
+        for (i = 0; i < DSIZE; i +=4) begin
             mem_input_addr = i;
             //$display("address: %d", mem_input_addr);
             mem_input_data = {image[i+3], image[i+2], image[i+1], image[i]};
