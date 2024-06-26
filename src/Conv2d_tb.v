@@ -18,12 +18,13 @@ module conv_tb;
     integer i, j,file_id;
     integer timer_start=0;
     integer timer_stop=0;
+    integer seed=0;
 
     
     reg start = 0;
      // Declare the register with appropriate size
     reg [8*KSIZE*KSIZE-1:0] kernel;
-    reg [7:0] image [255:0]; 
+    reg [7:0] image [DSIZE-1:0]; 
 
 
     reg  rst_n = 0;
@@ -61,9 +62,22 @@ module conv_tb;
 
     // Initial block to assign values to kernel and image
     initial begin
-        kernel = {8'd1, 8'd0, -8'd1, 8'd1, 8'd0, -8'd1, 8'd1, 8'd0, -8'd1}; 
-        for (i = 0; i < 256; i +=1) 
-            image[i] = i;    
+        seed = $realtime;
+        kernel = {8'd1, 8'd0, 8'd1, 8'd1, 8'd0, 8'd1, 8'd1, 8'd0, 8'd1}; 
+        file_id = $fopen("input_image.txt", "w"); 
+        if (file_id == 0) begin 
+            $display("Error: Could not open file."); 
+            $finish; 
+        end 
+
+        for (i = 0; i < DSIZE; i +=1) begin
+            image[i] = $random(seed); 
+            image[i] = image[i] % 20; 
+            $fwrite(file_id, "%d", image[i]); 
+        end 
+        $fwrite(file_id, "\n"); 
+        $fclose(file_id); 
+
     end
 
     reg [31:0] count = 0;

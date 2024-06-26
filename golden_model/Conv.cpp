@@ -1,5 +1,13 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#include <iostream>
+#include <fstream>
+#include <string>
+
 using namespace std;
+#define DSIZE       1024
 #define image_width   8
 #define image_height  8
 
@@ -9,29 +17,29 @@ using namespace std;
 #define stride_x  1
 #define stride_y  1
 
-#define result_width   (image_width - kernel_width) / stride_x + 1
-#define result_height  (image_height - kernel_height) / stride_y + 1
+#define result_width   ((image_width - kernel_width) / stride_x + 1)
+#define result_height  ((image_height - kernel_height) / stride_y + 1)
 
 
-int image[image_width * image_height];
+int image[DSIZE];
 int kernel[9] = {1, 0, 1, 1, 0, 1, 1, 0, 1};
 int result[result_width * result_height];
 
+void read_input_image(string input_file) {
+  ifstream infile(input_file);
+
+    if (infile.is_open()) {
+    for (int i = 0; i < DSIZE; ++i) {
+        infile >> image[i]; // Read each number from the file into the array
+    }
+    infile.close(); // Close the file once done reading
+    } else {
+        cout << "Unable to open file." << endl;
+    } 
+}
 
 int main() {
-
-    for (int i = 0; i < image_width * image_height; i++) {
-        image[i] = i;
-    }
-
-    // print 2d using
-    for (int i =0; i< image_height; i++){
-        for (int j =0; j< image_width; j++){
-            printf("%d ", image[i * result_width + j]);
-        }
-        printf("\n");
-    }
-    printf("\n\n\n");
+    read_input_image("../src/input_image.txt");
 
     for (int i = 0; i < result_height; i++) {
         for (int j = 0; j < result_width; j++) {
@@ -53,15 +61,15 @@ int main() {
         }
     }
 
-    // print 2d using
-     for (int i =0; i< result_height; i++){
-         for (int j =0; j< result_width; j++){
-             printf("%d ", result[i * result_width + j]);
-         }
-         printf("\n");
-     }
+    // Print the 2D result
+    for (int i = 0; i < result_height; i++) {
+        for (int j = 0; j < result_width; j++) {
+            printf("%d ", result[i * result_width + j]);
+        }
+        printf("\n");
+    }
 
-         // Write the result to a text file
+    // Write the result to a text file
     FILE *file = fopen("golden_model_output.txt", "w");
     if (file == NULL) {
         printf("Error opening file!\n");

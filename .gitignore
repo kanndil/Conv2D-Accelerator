@@ -178,3 +178,4 @@ conv2d_old.v
 output.txt
 verilog_module_output.txt
 .DS_Store
+src/input_image.txt
