@@ -49,7 +49,8 @@ module conv #(parameter DSIZE = 1024, KSIZE = 5) // This is the maximum kernel s
     reg [7:0]   DI  [DSIZE-1:0];
     reg [7:0]   DO  [DSIZE-1:0];
 
-    wire [7:0]  di_addr, k_addr;
+    wire [10:0]  di_addr;
+    wire [7:0]  k_addr;
 
     /* 
         +----+           +----+
@@ -126,16 +127,16 @@ module conv #(parameter DSIZE = 1024, KSIZE = 5) // This is the maximum kernel s
         if (di_last_col)           di_y_cntr <= 0;
         else if(di_row_done)       di_y_cntr <= di_y_cntr + 1;
 
-    wire [7:0] image_x = di_x_cntr * stride_x + k_x_cntr;
-    wire [7:0] image_y = di_y_cntr * stride_y + k_y_cntr;
+    wire [10:0] image_x = di_x_cntr * stride_x + k_x_cntr;
+    wire [10:0] image_y = di_y_cntr * stride_y + k_y_cntr;
 
     assign di_addr  = image_x + data_width * image_y;
     assign k_addr   = k_x_cntr + kernel_width * k_y_cntr;
-    wire [7:0] do_addr = di_x_cntr + data_width * di_y_cntr;
+    wire [10:0] do_addr = di_x_cntr + data_width * di_y_cntr;
 
 
     reg kernel_done_delayed=0; 
-    reg [7:0] do_addr_delayed=0;
+    reg [10:0] do_addr_delayed=0;
     reg di_done_delayed =0; 
     reg di_done_delayed_2 =0;
     always @(posedge clk, negedge rst_n) 
