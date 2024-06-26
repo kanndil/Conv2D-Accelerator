@@ -1,20 +1,21 @@
 #include <stdio.h>
 using namespace std;
+#define image_width   8
+#define image_height  8
+
+#define kernel_width   3
+#define kernel_height  3
+
+#define stride_x  1
+#define stride_y  1
+
+#define result_width   (image_width - kernel_width) / stride_x + 1
+#define result_height  (image_height - kernel_height) / stride_y + 1
 
 int main() {
-    int image_width = 8;
-    int image_height = 8;
+
     int image[image_width * image_height];
-
-    int kernel_width = 3;
-    int kernel_height = 3;
     int kernel[9] = {1, 0, 1, 1, 0, 1, 1, 0, 1};
-
-    int stride_x = 1;
-    int stride_y = 1;
-
-    int result_width = (image_width - kernel_width) / stride_x + 1;
-    int result_height = (image_height - kernel_height) / stride_y + 1;
     int result[result_width * result_height];
 
     for (int i = 0; i < image_width * image_height; i++) {
@@ -73,10 +74,6 @@ int main() {
     }
 
     fclose(file);
-
-
-
-
 
     return 0;
 }
