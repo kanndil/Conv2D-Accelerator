@@ -1,8 +1,29 @@
-#define IMAGE_WIDTH  8
-#define IMAGE_HEIGHT  8
+#define DSIZE       1024
+#define IMAGE_WIDTH  62
+#define IMAGE_HEIGHT  12
 
-#define KERNEL_WIDTH  3
-#define KERNEL_HEIGHT  3
+// #define KERNEL_3x3 1
+#define KERNEL_5x5 1
+
+
+#ifdef KERNEL_3x3
+        #define KERNEL_WIDTH  3
+        #define KERNEL_HEIGHT  3
+        int kernel[9] = {   1, 0, 1, 
+                            1, 0, 1, 
+                            1, 0, 1};
+#endif
+
+#ifdef KERNEL_5x5
+        #define KERNEL_WIDTH  5
+        #define KERNEL_HEIGHT  5
+        int kernel[25] = {  1, 0, 1, 0, 1,
+                            1, 0, 1, 0, 1,
+                            1, 0, 1, 0, 1, 
+                            1, 0, 1, 0, 1, 
+                            1, 0, 1, 0, 1};
+#endif
+
 
 #define STRIDE_X  1
 #define STRIDE_Y  1
@@ -10,8 +31,7 @@
 #define RESULT_WIDTH  ((IMAGE_WIDTH - KERNEL_WIDTH) / STRIDE_X + 1)
 #define RESULT_HEIGHT ((IMAGE_HEIGHT - KERNEL_HEIGHT) / STRIDE_Y + 1)
 
-int image[IMAGE_WIDTH * IMAGE_HEIGHT];
-int kernel[9] = {1, 0, 1, 1, 0, 1, 1, 0, 1};
+int image[DSIZE];
 int result[RESULT_WIDTH * RESULT_HEIGHT];
 
 long elapsedTime = 0;
@@ -23,7 +43,7 @@ void setup() {
   Serial.begin(9600);
 
   // Initialize the image array
-  for (int i = 0; i < IMAGE_WIDTH * IMAGE_HEIGHT; i++) {
+  for (int i = 0; i < DSIZE; i++) {
     image[i] = i;
   }
 }
