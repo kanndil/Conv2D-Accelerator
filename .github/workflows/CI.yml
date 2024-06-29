@@ -50,7 +50,7 @@ jobs:
     - name: Run Golden Model
       run: |
         cd golden_model/
-        g++ -o out Conv.cpp
+        g++ -o out One_Channel_Conv.cpp 
         ./out
         
     - name: validation
