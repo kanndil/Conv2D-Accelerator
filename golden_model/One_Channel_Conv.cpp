@@ -72,7 +72,7 @@ void one_channel_conv(  q7_t *input_image,
                 for (int k_j = 0; k_j < dim_kernel_x; k_j++) {
                     int image_i = i * stride_y + k_i;
                     int image_j = j * stride_x + k_j;
-                    sum += image[image_i * dim_im_in_x + image_j] * kernel[k_i * dim_kernel_x + k_j];
+                    sum += input_image[image_i * dim_im_in_x + image_j] * input_kernel[k_i * dim_kernel_x + k_j];
                 }
             }
             // Saturate the sum to be within -128 to 127
